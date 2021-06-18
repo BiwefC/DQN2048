@@ -7,10 +7,17 @@ class Board:
   def __init__(self):
     print("This is from board")
     self.WIDTH = 4
-    self.HIGHT = 5
+    self.HIGHT = 4
+    self.score = 0
     self.board = np.zeros([self.HIGHT, self.WIDTH], dtype=np.int)
     self.random_generate()
     self.random_generate()
+
+    self.__dir_func = {}
+    self.__dir_func["left"] = self.__step_left
+    self.__dir_func["right"] = self.__step_right
+    self.__dir_func["up"] = self.__step_up
+    self.__dir_func["down"] = self.__step_down
 
   def random_generate(self):
     free_xy = np.where(self.board == 0)
@@ -41,7 +48,9 @@ class Board:
 
     return board
 
-  def draw_board(self, board):
+  def draw_board(self, score, board):
+    print("Score: {}".format(score))
+    print("")
     for row in board:
       row_len = len(row)
       for i in range(row_len):
@@ -77,49 +86,79 @@ class Board:
     for i in range(h):
       for j in range(w-1):
         if board[i, j] == board[i, j+1] and board[i, j] != 0:
-          board[i, j] = board[i, j] + 1
+          new_value = board[i, j] + 1
+          board[i, j] = new_value
           board[i, j+1] = 0
+
+          self.score += self.__convert_intutive(new_value)
 
     return board
 
-  def step_left(self):
-    self.board =  self.__tight_left(self.__merge_left(self.__tight_left(self.board)))
+  def __step_left(self, board):
+    return self.__tight_left(self.__merge_left(self.__tight_left(board)))
 
-  def step_right(self):
-    self.board = np.flip(self.board, axis=1)
-    self.step_left()
-    self.board = np.flip(self.board, axis=1)
+  def __step_right(self, board):
+    return np.flip(self.__step_left(np.flip(board, axis=1)), axis=1)
 
-  def step_up(self):
-    self.board = self.board.T
-    self.step_left()
-    self.board = self.board.T
+  def __step_up(self, board):
+    return self.__step_left(board.T).T
 
-  def step_down(self):
-    self.board = self.board.T
-    self.step_right()
-    self.board = self.board.T
+  def __step_down(self, board):
+    return self.__step_right(board.T).T
 
-class Game2048(Board):
+  def step(self, direct):
+    self.board = self.__dir_func[direct](self.board)
+
+  def if_step(self, direct):
+    return (self.__dir_func[direct](self.board) != self.board).any()
+
+  def legal_step(self):
+    legal_step = []
+    for direct in self.__dir_func:
+      if self.if_step(direct):
+        legal_step.append(direct)
+
+    return legal_step
+
+
+class Game2048():
   def __init__(self):
     print("This is from Game2048")
-    Board.__init__(self)
+    self.board = Board()
+
+  def input_step(self):
+    while 1:
+      direct = input("Input direct: (w/a/s/d)")
+      if len(direct) != 1:
+        print("Illegal input!")
+      elif (direct[0] == "a"):
+        return "left"
+      elif (direct[0] == "d"):
+        return "right"
+      elif (direct[0] == "w"):
+        return "up"
+      elif (direct[0] == "s"):
+        return "down"
+      else:
+        print("Illegal input!")
+
+  def play(self):
+    self.board.draw_board(self.board.score, self.board.get_intutive_board())
+    legal_step = self.board.legal_step()
+    while legal_step:
+      direct = self.input_step()
+      if direct in legal_step:
+        self.board.step(direct)
+        self.board.random_generate()
+        self.board.draw_board(self.board.score, self.board.get_intutive_board())
+        legal_step = self.board.legal_step()
+      else:
+        print("Can't step {}".format(direct))
+    print("GAME OVER!")
 
 
 if __name__ == "__main__":
   game = Game2048()
-  game.draw_board(game.get_intutive_board())
-  while(1):
-    direct = input("Input direct: (w/a/s/d)")
-    if (direct[0] == "a"):
-      game.step_left()
-    elif (direct[0] == "d"):
-      game.step_right()
-    elif (direct[0] == "w"):
-      game.step_up()
-    elif (direct[0] == "s"):
-      game.step_down()
+  game.play()
 
-    game.random_generate()
-    game.draw_board(game.get_intutive_board())
 
