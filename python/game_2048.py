@@ -8,16 +8,23 @@ class Board:
     print("This is from board")
     self.WIDTH = 4
     self.HIGHT = 4
-    self.score = 0
-    self.board = np.zeros([self.HIGHT, self.WIDTH], dtype=np.int)
-    self.random_generate()
-    self.random_generate()
 
     self.__dir_func = {}
     self.__dir_func["left"] = self.__step_left
     self.__dir_func["right"] = self.__step_right
     self.__dir_func["up"] = self.__step_up
     self.__dir_func["down"] = self.__step_down
+
+    self.score = 0
+    self.board = np.zeros([self.HIGHT, self.WIDTH], dtype=np.int)
+    self.random_generate()
+    self.random_generate()
+
+  def start(self):
+    self.score = 0
+    self.board = np.zeros([self.HIGHT, self.WIDTH], dtype=np.int)
+    self.random_generate()
+    self.random_generate()
 
   def random_generate(self):
     free_xy = np.where(self.board == 0)
@@ -33,10 +40,7 @@ class Board:
     self.board[free_xy[0][index], free_xy[1][index]] = num
 
   def __convert_intutive(self, num):
-    if num == 0:
-      return ""
-    else:
-      return 2 ** num
+    return int(2 ** num)
 
   def get_intutive_board(self):
     board = []
@@ -60,6 +64,8 @@ class Board:
         print("|{:^7}".format(""), end="")
       print("|")
       for item in row:
+        if item == 1:
+          item = ""
         print("|{:^7}".format(item), end="")
       print("|")
       for i in range(row_len):
@@ -110,7 +116,11 @@ class Board:
     self.board = self.__dir_func[direct](self.board)
 
   def if_step(self, direct):
-    return (self.__dir_func[direct](self.board) != self.board).any()
+    score_bak = self.score
+    return_val = (self.__dir_func[direct](self.board) != self.board).any()
+    self.score = score_bak
+
+    return return_val
 
   def legal_step(self):
     legal_step = []
@@ -120,45 +130,13 @@ class Board:
 
     return legal_step
 
+  def do_step(self, direct):
+    if self.if_step(direct):
+      self.step(direct)
+      self.random_generate()
+    else:
+      print("{} is illegal step!".format(direct))
 
-class Game2048():
-  def __init__(self):
-    print("This is from Game2048")
-    self.board = Board()
-
-  def input_step(self):
-    while 1:
-      direct = input("Input direct: (w/a/s/d)")
-      if len(direct) != 1:
-        print("Illegal input!")
-      elif (direct[0] == "a"):
-        return "left"
-      elif (direct[0] == "d"):
-        return "right"
-      elif (direct[0] == "w"):
-        return "up"
-      elif (direct[0] == "s"):
-        return "down"
-      else:
-        print("Illegal input!")
-
-  def play(self):
-    self.board.draw_board(self.board.score, self.board.get_intutive_board())
-    legal_step = self.board.legal_step()
-    while legal_step:
-      direct = self.input_step()
-      if direct in legal_step:
-        self.board.step(direct)
-        self.board.random_generate()
-        self.board.draw_board(self.board.score, self.board.get_intutive_board())
-        legal_step = self.board.legal_step()
-      else:
-        print("Can't step {}".format(direct))
-    print("GAME OVER!")
-
-
-if __name__ == "__main__":
-  game = Game2048()
-  game.play()
+    return self.legal_step()
 
 
