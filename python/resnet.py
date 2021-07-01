@@ -48,7 +48,7 @@ class ResNet(torch.nn.Module):
     def __init__(self):
         super(ResNet, self).__init__()
         self.resnet = torch.nn.Sequential(
-            conv3x3(n_in=2),
+            conv3x3(n_in=1),
             batchnorm2d(),
             ResidualBlock(),
             ResidualBlock(),

@@ -4,7 +4,7 @@ import curses
 import sys
 
 class Board:
-  def __init__(self):
+  def __init__(self, board_copy = None):
     print("This is from board")
     self.WIDTH = 4
     self.HIGHT = 4
@@ -15,10 +15,14 @@ class Board:
     self.__dir_func["up"] = self.__step_up
     self.__dir_func["down"] = self.__step_down
 
-    self.score = 0
-    self.board = np.zeros([self.HIGHT, self.WIDTH], dtype=np.int)
-    self.random_generate()
-    self.random_generate()
+    if board_copy:
+        self.score = board_copy.score
+        self.board = board_copy.board.copy()
+    else:
+        self.score = 0
+        self.board = np.zeros([self.HIGHT, self.WIDTH], dtype=np.int)
+        self.random_generate()
+        self.random_generate()
 
   def start(self):
     self.score = 0

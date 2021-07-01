@@ -7,6 +7,8 @@ class Config(object):
 
         # weight
         self.weights_dir = "../weights"
+        self.model_latest = self.weights_dir + "/latest.pkl"
+        self.model_target = self.weights_dir + "/target.pkl"
 
         # hyper
         self.filters = 32
@@ -15,6 +17,7 @@ class Config(object):
         self.batchnorm_momentum = 0.1
 
         # train
+        self.target_update_num = 10
         self.recent_count = 10000
         self.batch_size = 256
         self.learning_rate = 1e-4
