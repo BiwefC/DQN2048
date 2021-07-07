@@ -5,7 +5,6 @@ import sys
 
 class Board:
   def __init__(self, board_copy = None):
-    print("This is from board")
     self.WIDTH = 4
     self.HIGHT = 4
 
@@ -34,14 +33,15 @@ class Board:
     free_xy = np.where(self.board == 0)
     free_num = len(free_xy[0])
 
-    index_list = list(range(free_num))
-    random.shuffle(index_list)
-    index = index_list[0]
+    if free_num != 0:
+        index_list = list(range(free_num))
+        random.shuffle(index_list)
+        index = index_list[0]
 
-    num_list = [1, 1, 1, 2]
-    random.shuffle(num_list)
-    num = num_list[0]
-    self.board[free_xy[0][index], free_xy[1][index]] = num
+        num_list = [1, 1, 1, 2]
+        random.shuffle(num_list)
+        num = num_list[0]
+        self.board[free_xy[0][index], free_xy[1][index]] = num
 
   def __convert_intutive(self, num):
     return int(2 ** num)
@@ -133,6 +133,11 @@ class Board:
         legal_step.append(direct)
 
     return legal_step
+
+  def do_step_no_check(self, direct):
+    self.step(direct)
+    self.random_generate()
+
 
   def do_step(self, direct):
     if self.if_step(direct):

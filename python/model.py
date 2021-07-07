@@ -2,11 +2,12 @@ import torch
 from torch.autograd import Variable
 import resnet
 from config import config as c
+import numpy as np
 
 class Model:
     def __init__(self, is_train=True):
-        self.eval_net = resnet.Resnet()
-        self.eval_net.cuda()
+        self.resnet = resnet.ResNet()
+        self.resnet.cuda()
 
         if is_train:
             self.optimizer = torch.optim.SGD(
@@ -23,8 +24,9 @@ class Model:
         with torch.no_grad():
             observation = Variable(torch.from_numpy(observation).float().cuda())
 
-        self.eval_net.eval()
-        p = self.eval_net.forward(observation)
+        self.resnet.eval()
+        p = self.resnet.forward(observation)
+        p = p.data.cpu().numpy()
 
         p = np.reshape(p, [count, c.step_num])
 
@@ -36,7 +38,7 @@ class Model:
 
         train_policy_loss = 0.0
 
-        self.eval_net.train()
+        self.resnet.train()
 
         for i in range(n_batches):
             if (i + 1) % 100 == 0:
@@ -47,7 +49,7 @@ class Model:
             qtar_var = Variable(torch.from_numpy(q_target[start:end]).float().cuda())
 
             self.optimizer.zero_grad()
-            q_eval = self.eval_net.forward(obsv_var)
+            q_eval = self.resnet.forward(obsv_var)
 
             policy_loss = self.policy_loss_fn.forward(q_eval, qtar_var)
 
@@ -60,6 +62,6 @@ class Model:
 
         print("Train policy_loss = {}".format(train_policy_loss / n_batches))
 
-        with open(c.weight_dir + '/log/train.log', 'a') as f:
+        with open(c.train_log, 'a') as f:
             f.write("Train policy_loss = {}\n".format(train_policy_loss / n_batches))
 
